@@ -4,6 +4,16 @@ import pymongo
 import json
 import demjson
 import argparse
+import unicodedata
+import string
+
+all_letters = string.ascii_letters + " .,;'-_"+string.digits+'"'
+n_letters = len(all_letters)
+
+
+def unicodeToAscii(s):
+    return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn' and c in all_letters)
+
 
 USERNAME='manos'
 PASSWORD='11Ian19891989'
@@ -19,7 +29,8 @@ def main(collection_name,column_to_search,text_name):
 	text=open(text_name,'r')
 	keywords_list=[line.strip() for line in text]
 	text.close()	
-	for SearchWord in keywords_list:
+	for S in keywords_list:
+		SearchWord=unicodeToAscii(S)
 		output=open(output_name,'a')
 		rexpr='(?i).*{SW}.*'.replace('{SW}',SearchWord)
 		results=db[collection_name].aggregate([{'$match':{column_to_search:{'$regex':"'"+rexpr+"'"}}},{'$project':{'patent_id':1,column_to_search:1}}])
